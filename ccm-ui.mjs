@@ -1,26 +1,17 @@
 /**
  * @module ccm-ui
- * @description Minimal UI utilities for ccmjs (templating + rendering + event binding)
+ * @description Minimal UI utilities for ccmjs (templating + rendering)
  *
  * Features:
  * - Template literal HTML creation
  * - DOM rendering helper
  * - Declarative event binding via `data-on-*`
- *
- * Design Goals:
- * - No framework lock-in
- * - Declarative UI
- * - Full separation of structure and behavior
- * - Seamless integration with ccmjs `onaction`
+ * - Automatic integration with `instance.events` and `instance.onaction`
+ * - No public bind() API (handled internally by render)
  */
 
 /**
  * Creates DOM nodes from a template literal.
- *
- * Supports:
- * - strings and numbers
- * - DOM nodes (via placeholder replacement)
- * - arrays (flattened into strings)
  *
  * @param {TemplateStringsArray} strings
  * @param {...any} values
@@ -60,7 +51,7 @@ export function html(strings, ...values) {
   template.innerHTML = result.trim();
   const fragment = template.content;
 
-  // Replace node placeholders with actual DOM nodes
+  // Replace placeholders with actual nodes
   values.forEach((value, i) => {
     if (!(value instanceof Node)) return;
 
@@ -79,10 +70,11 @@ export function html(strings, ...values) {
 }
 
 /**
- * Renders content into a DOM element.
+ * Renders content into a DOM element and automatically binds events.
  *
  * @param {Node|string|null} content
  * @param {Element} element
+ * @param {Object} instance - ccmjs instance
  */
 export function render(content, element, instance) {
   if (!element) return;
@@ -97,46 +89,37 @@ export function render(content, element, instance) {
   }
 
   if (content instanceof Node) {
-    // 🔥 AUTO-BIND
-    if (instance?.ui?.bind) {
-      instance.ui.bind(content, instance, instance.events);
-    }
+    // automatic event binding (internal)
+    bind(content, instance);
 
     element.appendChild(content);
   }
 }
 
 /**
- * Binds declarative DOM events to instance actions.
+ * INTERNAL: Binds declarative DOM events to instance actions.
  *
- * Recognizes attributes of the form:
- *
+ * Convention:
  *   data-on-click="next"
  *   data-on-input="typing"
  *
  * Behavior:
- * - Extracts event type from attribute name
- * - Extracts action name from attribute value
- * - Attaches DOM event listener
- * - Triggers:
- *     1. optional local handler (instance.events)
- *     2. global instance.onaction
+ * - Calls instance.events[actionName] (if defined)
+ * - Calls instance.onaction (if defined)
  *
- * @param {Element} root - Root element to scan
- * @param {Object} instance - ccmjs instance
- * @param {Object} [handlers={}] - Optional local event handlers (instance.events)
- * @returns {Element}
+ * @private
  */
-export function bind(root, instance, handlers = {}) {
-  if (!root) return root;
+function bind(root, instance) {
+  if (!root || !instance) return;
+
+  const handlers = instance.events || {};
 
   root.querySelectorAll("*").forEach((el) => {
     [...el.attributes].forEach((attr) => {
-      // only process data-on-* attributes
       if (!attr.name.startsWith("data-on-")) return;
 
-      const eventType = attr.name.slice(8); // e.g. "click"
-      const actionName = attr.value; // e.g. "next"
+      const eventType = attr.name.slice(8);
+      const actionName = attr.value;
 
       el.addEventListener(eventType, (event) => {
         const payload = {
@@ -146,18 +129,16 @@ export function bind(root, instance, handlers = {}) {
           element: el,
         };
 
-        // 1. local handler (optional)
+        // local handler
         if (handlers[actionName]) {
           handlers[actionName](payload);
         }
 
-        // 2. global action (ccmjs convention)
+        // global action
         if (instance.onaction) {
           instance.onaction(payload);
         }
       });
     });
   });
-
-  return root;
 }
