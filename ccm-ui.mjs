@@ -122,22 +122,19 @@ function bind(root, instance) {
       const actionName = attr.value;
 
       el.addEventListener(eventType, (event) => {
-        const payload = {
-          instance,
-          type: actionName,
-          event,
-          element: el,
-        };
 
-        // local handler
+        event.action = actionName;
+        event.instance = instance;
+        event.element = el;
+
         if (handlers[actionName]) {
-          handlers[actionName](payload);
+          handlers[actionName](event);
         }
 
-        // global action
         if (instance.onaction) {
-          instance.onaction(payload);
+          instance.onaction(event);
         }
+
       });
     });
   });
