@@ -111,10 +111,11 @@ export const component = {
   Instance: function () {
 
     this.start = async () => {
-      this.ui.render(this.html.view(this), this.element, this);
+      const view = this.html.view(this);
+      this.ui.render(view, this.element, this);
     };
   
-    this.events: {
+    this.events = {
       next: event => {
         console.log("Next clicked");
       }
