@@ -46,6 +46,8 @@ const view = html`
     ${items.map(item => html`<li>${item}</li>`)}
   </ul>
 `;
+
+render(view, document.body);
 ```
 
 ### Injecting DOM Nodes
@@ -60,23 +62,24 @@ const view = html`
     ${button}
   </div>
 `;
+
+render(view, document.body);
 ```
 
 In this mode, ccm-ui is just a lightweight alternative to manual DOM creation or string concatenation.
 
 No framework, no event system — just declarative HTML.
 
-
 ## ⚡ Using with ccmjs (Event Binding)
 
-When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic using conventions.
+When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic via conventions.
 
 Instead of attaching event listeners manually, events are declared directly in HTML.
 
 Example:
 
 ```js
-/* templates.mjs */
+/* ./templates.mjs */
 export function view(instance) {
   return html`
     <div>
@@ -90,13 +93,13 @@ export function view(instance) {
 The `render()` function then automatically binds these events to the instance:
 
 ```js
-/* ccm.example.mjs */
+/* ./ccm.example.mjs */
 export const component = {
   name: "example",
   config: {
-    ui: [ "ccm.load", "https://ccmjs.github.io/ccm-ui/ccm-ui.js" ],
+    ui: [ "ccm.load", "./ccm-ui.js" ],
     name: "Mika",
-    html: [ "ccm.load", "https://ccmjs.github.io/ccm-ui/resources/templates.mjs" ],
+    html: [ "ccm.load", "./resources/templates.mjs" ],
     onaction: event => {
       switch (event.type) {
         case "next":
@@ -107,15 +110,15 @@ export const component = {
   },
   Instance: function () {
 
-    start: async () => {
-      this.ui.render(this.html.view, this.element, this);
-    },
+    this.start = async () => {
+      this.ui.render(this.html.view(this), this.element, this);
+    };
   
-    events: {
+    this.events: {
       next: event => {
         console.log("Next clicked");
       }
-    }
+    };
   }
 };
 ```
@@ -157,13 +160,13 @@ This keeps UI and behavior loosely coupled and highly reusable.
 
 ## 📦 API
 
-`html(strings, ...values)`
+### html(strings, ...values)
 
 Creates DOM nodes from a template literal.
 
-`render(content, element, instance)`
+### render(content, element, instance)
 
-Renders content and automatically binds events.
+Renders content and automatically binds events (if an instance is provided).
 
 ## 🧭 Philosophy
 
