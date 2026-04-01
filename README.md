@@ -15,174 +15,143 @@ Instead, it follows the same philosophy:
 
 > Keep the core minimal and move patterns into conventions.
 
-## 🧠 Design Principles
+## 🧩 Basic Example (Standalone)
 
-- **Minimal** — no unnecessary abstraction
-- **Declarative** — structure describes behavior
-- **Framework-free** — no runtime dependencies
-- **Composable** — works with any ccmjs component
-- **Convention-based** — integrates with `instance.events` and `onaction`
+ccm-ui can be used independently of ccmjs for simple HTML templating.
 
-## 🚀 Installation
-
-Use it as a module dependency in ccmjs:
+### Simple Template
 
 ```js
-ui: [ "ccm.load", "./ccm-ui.js" ]
-```
+import { html, render } from "https://ccmjs.github.io/ccm-ui/ccm-ui.js";
 
-## 🧩 Basic Usage
+const name = "Mika";
 
-```js
-const view = this.ui.html`
+const view = html`
   <div>
-    <h1>Hello ${this.name}</h1>
-    <button data-on-click="next">Next</button>
+    <h1>Hello ${name}</h1>
+    <p>This is a simple template.</p>
   </div>
 `;
 
-this.ui.render(view, this.element, this);
+render(view, document.body);  // Renders template inside <body>
 ```
 
-## 🎯 Template Syntax
-
-```js
-this.ui.html`
-  <h1>Hello ${name}</h1>
-`
-```
-
-Supported values:
-
-* strings
-* numbers
-* DOM nodes
-* arrays
-
-## 🔁 Rendering Lists
+### Rendering Lists
 
 ```js
 const items = ["A", "B", "C"];
 
-const view = this.ui.html`
+const view = html`
   <ul>
-    ${items.map(item => this.ui.html`<li>${item}</li>`)}
+    ${items.map(item => html`<li>${item}</li>`)}
   </ul>
 `;
 ```
 
-## 🧩 Injecting DOM Nodes
+### Injecting DOM Nodes
 
 ```js
-const button = document.createElement("button");
-button.textContent = "Click";
+const button = html`<button>Click me</button>`;
+button.onclick = () => alert("Hello!");
 
-const view = this.ui.html`
+const view = html`
   <div>
+    <h2>Interactive Element</h2>
     ${button}
   </div>
 `;
 ```
 
-## ⚡ Declarative Event Binding
+In this mode, ccm-ui is just a lightweight alternative to manual DOM creation or string concatenation.
 
-Events are defined directly in HTML using:
+No framework, no event system — just declarative HTML.
 
-```js
-data-on-<event>="action"
-```
 
-Example:
+## ⚡ Using with ccmjs (Event Binding)
+
+When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic using conventions.
+
+Instead of attaching event listeners manually, events are declared directly in HTML:
 
 ```html
 <button data-on-click="next">Next</button>
-<input data-on-input="typing">
-<form data-on-submit="submit"></form>
 ```
 
-## 🔄 Event Flow
+The `render()` function then automatically binds these events to the instance.
+
+Example:
+
+```js
+export const component = {
+  name: "example",
+  config: {
+    ui: [ "ccm.load", "https://ccmjs.github.io/ccm-ui/ccm-ui.js" ],
+    name: "Mika",
+    onaction: event => {
+      switch (event.type) {
+        case "next":
+          console.log("Next clicked");
+          break;
+      }
+    }
+  },
+  Instance: function () {
+
+    start: async () => {
+  
+      const view = this.ui.html`
+        <div>
+          <h1>Hello ${this.name}</h1>
+          <button data-on-click="next">Next</button>
+        </div>
+      `;
+  
+      this.ui.render(view, this.element, this);
+    },
+  
+    events: {
+      next: event => {
+        console.log("Next clicked");
+      }
+    }
+  }
+};
+```
+
+Each event contains:
+
+* `instance` — component instance
+* `type` — action name
+* `event` — original DOM event
+* `element` — source DOM element
+
+Additional data can be attached via `data-*` attributes.
+
+Event flow:
 
 ```
 DOM Event → instance.events → instance.onaction
 ```
 
-## 🧩 Local Event Handlers
+Key idea:
 
-```js
-this.events = {
-  next: ({ instance }) => {
-    instance.step++;
-  }
-};
+Templates describe **what happens**, not **how it happens**.
+
+The template only contains action names:
+
+```html
+data-on-<event>="action"
 ```
 
-## 🧩 Global Event Handling (onaction)
+The actual logic is defined separately:
 
 ```js
-onaction: event => {
-  switch (event.type) {
-    case "next":
-      console.log("Next clicked");
-      break;
-  }
+events: {
+  <event>: event => { ... }
 }
 ```
 
-## 🧩 Event Object
-
-Each event contains:
-
-* instance — component instance
-* type — action name
-* event — original DOM event
-* element — source DOM element
-
-Additional data can be attached via `data-*` attributes.
-
-## 🧩 Templates as Modules
-
-Templates can be externalized:
-
-```js
-export function main(instance) {
-  return instance.ui.html`
-    <button data-on-click="next">Next</button>
-  `;
-}
-```
-
-## 🧩 Usage in Component
-
-```js
-this.start = async () => {
-
-  const view = this.html.main(this);
-
-  this.ui.render(view, this.element, this);
-
-};
-```
-
-## 🔥 Key Features
-
-* automatic event binding (no manual wiring)
-* no template runtime or virtual DOM
-* full separation of UI and logic
-* integrates with ccmjs lifecycle and conventions
-
-## ⚖️ Comparison
-
-...
-
-## 🧭 Philosophy
-
-ccm-ui is not a framework.
-
-It is a pattern extraction:
-
-* Templates describe structure
-* Actions describe behavior
-* Components orchestrate everything
+This keeps UI and behavior loosely coupled and highly reusable.
 
 ## 📦 API
 
@@ -194,22 +163,18 @@ Creates DOM nodes from a template literal.
 
 Renders content and automatically binds events.
 
-## 🪶 Why ccm-ui?
+## 🧭 Philosophy
 
-Because sometimes you only need:
+> Start with HTML and JavaScript.  
+> Add patterns only when they are truly needed.
 
-* HTML
-* Events
-* Composition
+Instead of introducing a rendering engine, virtual DOM, or reactivity system,
+ccm-ui focuses on:
 
-...and nothing else.
+* declarative structure
+* explicit behavior
+* minimal abstraction
 
 ## 📄 License
 
 MIT License
-
-## 🔗 Related
-
-* ccmjs framework
-* declarative dependencies
-* component-based web architecture
