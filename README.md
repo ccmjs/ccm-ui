@@ -15,6 +15,8 @@ Instead, it follows the same philosophy:
 
 > Keep the core minimal and move patterns into conventions.
 
+ccm-ui works standalone, but unlocks its full power when used with ccmjs.
+
 ## 🧩 Basic Example (Standalone)
 
 ccm-ui can be used independently of ccmjs for simple HTML templating.
@@ -72,7 +74,7 @@ No framework, no event system — just declarative HTML.
 
 ## ⚡ Using with ccmjs (Event Binding)
 
-When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic via conventions.
+When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic based on conventions.
 
 Instead of attaching event listeners manually, events are declared directly in HTML.
 
@@ -124,7 +126,7 @@ export const component = {
 };
 ```
 
-Each event is the original DOM event extended with additional properties:
+Each event is the original DOM event, extended with additional properties:
 
 * `action` — action name (from `data-on-*`)
 * `instance` — component instance  
@@ -143,14 +145,14 @@ Key idea:
 The template only contains action names:
 
 ```html
-data-on-<event>="action"
+data-on-<event>="<action>"
 ```
 
 The actual logic is defined separately:
 
 ```js
 events: {
-  action: event => { ... }
+  <action>: event => { ... }
 }
 ```
 
@@ -162,9 +164,9 @@ This keeps UI and behavior loosely coupled and highly reusable.
 
 Creates DOM nodes from a template literal.
 
-### render(content, element, instance)
+### render(content, element, [instance])
 
-Renders content and automatically binds events (if an instance is provided).
+Renders content and automatically binds events if an instance is provided.
 
 ## 🧭 Philosophy
 
