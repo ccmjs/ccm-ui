@@ -71,22 +71,32 @@ No framework, no event system — just declarative HTML.
 
 When used with a ccmjs instance, ccm-ui automatically connects DOM events to instance logic using conventions.
 
-Instead of attaching event listeners manually, events are declared directly in HTML:
-
-```html
-<button data-on-click="next">Next</button>
-```
-
-The `render()` function then automatically binds these events to the instance.
+Instead of attaching event listeners manually, events are declared directly in HTML.
 
 Example:
 
 ```js
+/* templates.mjs */
+export function view(instance) {
+  return html`
+    <div>
+      <h1>Hello ${instance.name}</h1>
+      <button data-on-click="next">Next</button>
+    </div>
+  `;
+}
+```
+
+The `render()` function then automatically binds these events to the instance:
+
+```js
+/* ccm.example.mjs */
 export const component = {
   name: "example",
   config: {
     ui: [ "ccm.load", "https://ccmjs.github.io/ccm-ui/ccm-ui.js" ],
     name: "Mika",
+    html: [ "ccm.load", "https://ccmjs.github.io/ccm-ui/resources/templates.mjs" ],
     onaction: event => {
       switch (event.type) {
         case "next":
@@ -98,15 +108,7 @@ export const component = {
   Instance: function () {
 
     start: async () => {
-  
-      const view = this.ui.html`
-        <div>
-          <h1>Hello ${this.name}</h1>
-          <button data-on-click="next">Next</button>
-        </div>
-      `;
-  
-      this.ui.render(view, this.element, this);
+      this.ui.render(this.html.view, this.element, this);
     },
   
     events: {
@@ -135,7 +137,7 @@ DOM Event → instance.events → instance.onaction
 
 Key idea:
 
-Templates describe **what happens**, not **how it happens**.
+> Templates describe **what happens**, not **how it happens**.
 
 The template only contains action names:
 
@@ -147,7 +149,7 @@ The actual logic is defined separately:
 
 ```js
 events: {
-  <event>: event => { ... }
+  action: event => { ... }
 }
 ```
 
