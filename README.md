@@ -130,8 +130,6 @@ Each event is the original DOM event extended with additional properties:
 * `instance` — component instance  
 * `element` — source DOM element  
 
-The DOM event is passed through unchanged and enriched with ccm-ui specific properties.
-
 Event flow:
 
 ```
