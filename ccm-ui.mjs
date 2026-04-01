@@ -70,11 +70,11 @@ export function html(strings, ...values) {
 }
 
 /**
- * Renders content into a DOM element and automatically binds events.
+ * Renders content into a DOM element and optionally binds events.
  *
  * @param {Node|string|null} content
  * @param {Element} element
- * @param {Object} instance - ccmjs instance
+ * @param {Object} [instance] - Optional ccmjs instance (enables event binding)
  */
 export function render(content, element, instance) {
   if (!element) return;
