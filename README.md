@@ -101,7 +101,7 @@ export const component = {
     name: "Mika",
     html: [ "ccm.load", "./resources/templates.mjs" ],
     onaction: event => {
-      switch (event.type) {
+      switch (event.action) {
         case "next":
           console.log("Next clicked");
           break;
@@ -124,19 +124,18 @@ export const component = {
 };
 ```
 
-Each event contains:
+Each event is the original DOM event extended with additional properties:
 
-* `instance` — component instance
-* `type` — action name
-* `event` — original DOM event
-* `element` — source DOM element
+* `action` — action name (from `data-on-*`)
+* `instance` — component instance  
+* `element` — source DOM element  
 
-Additional data can be attached via `data-*` attributes.
+The DOM event is passed through unchanged and enriched with ccm-ui specific properties.
 
 Event flow:
 
 ```
-DOM Event → instance.events → instance.onaction
+DOM Event (extended) → instance.events → instance.onaction
 ```
 
 Key idea:
