@@ -6,7 +6,7 @@
  * - Template literal HTML creation
  * - DOM rendering helper
  * - Declarative event binding via `data-on-*`
- * - Automatic integration with `instance.events` and `instance.onaction`
+ * - Automatic integration with `instance.events`
  * - No public bind() API (handled internally by render)
  */
 
@@ -105,7 +105,6 @@ export function render(content, element, instance) {
  *
  * Behavior:
  * - Calls instance.events[actionName] (if defined)
- * - Calls instance.onaction (if defined)
  *
  * @private
  */
@@ -114,28 +113,15 @@ function bind(root, instance) {
 
   const handlers = instance.events || {};
 
-  root.querySelectorAll("*").forEach((el) => {
+  const elements = [root, ...root.querySelectorAll("*")];
+  elements.forEach((el) => {
     [...el.attributes].forEach((attr) => {
       if (!attr.name.startsWith("data-on-")) return;
 
       const eventType = attr.name.slice(8);
       const actionName = attr.value;
 
-      el.addEventListener(eventType, (event) => {
-
-        event.action = actionName;
-        event.instance = instance;
-        event.element = el;
-
-        if (handlers[actionName]) {
-          handlers[actionName](event);
-        }
-
-        if (instance.onaction) {
-          instance.onaction(event);
-        }
-
-      });
+      el.addEventListener(eventType, (event) => handlers[actionName]?.(event));
     });
   });
 }
