@@ -21,49 +21,53 @@ export function html(strings, ...values) {
   const template = document.createElement("template");
   let result = "";
 
+  const placeholders = new Map();
+
+  function process(value, key) {
+    if (typeof value === "string" || typeof value === "number") {
+      return value;
+    }
+
+    if (value instanceof Node) {
+      const id = `ccm-node-${key}`;
+      placeholders.set(id, value);
+      return `<!--${id}-->`;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v, i) => process(v, `${key}-${i}`)).join("");
+    }
+
+    return "";
+  }
+
   strings.forEach((str, i) => {
     result += str;
 
     if (i < values.length) {
-      const value = values[i];
-
-      // primitive values
-      if (typeof value === "string" || typeof value === "number") {
-        result += value;
-      }
-
-      // DOM node placeholder
-      else if (value instanceof Node) {
-        result += `<!--ccm-node-${i}-->`;
-      }
-
-      // array support (e.g. lists)
-      else if (Array.isArray(value)) {
-        result += value
-          .map((v) => (typeof v === "string" || typeof v === "number" ? v : ""))
-          .join("");
-      } else {
-        result += "";
-      }
+      result += process(values[i], i);
     }
   });
 
   template.innerHTML = result.trim();
   const fragment = template.content;
 
-  // Replace placeholders with actual nodes
-  values.forEach((value, i) => {
-    if (!(value instanceof Node)) return;
+  const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_COMMENT);
 
-    const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_COMMENT);
+  const toReplace = [];
 
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node.nodeValue === `ccm-node-${i}`) {
-        node.replaceWith(value);
-        break;
-      }
+  let node;
+  while ((node = walker.nextNode())) {
+    const id = node.nodeValue.trim();
+    const replacement = placeholders.get(id);
+
+    if (replacement) {
+      toReplace.push({ node, replacement });
     }
+  }
+
+  toReplace.forEach(({ node, replacement }) => {
+    node.replaceWith(replacement);
   });
 
   return fragment.childNodes.length === 1 ? fragment.firstChild : fragment;
