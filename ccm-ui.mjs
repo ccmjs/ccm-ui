@@ -1,6 +1,9 @@
 /**
  * @module ccm-ui
  * @description Minimal UI utilities for ccmjs (templating + rendering)
+ * @author André Kless <andre.kless@web.de>
+ * @copyright 2026 André Kless
+ * @license MIT
  *
  * Features:
  * - Template literal HTML creation
