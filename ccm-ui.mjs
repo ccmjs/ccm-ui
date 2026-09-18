@@ -10,8 +10,24 @@
  * - No public bind() API (handled internally by render)
  */
 
+/** Trusted markup explicitly supplied through raw(), never inferred from an object's properties. */
+const rawValues = new WeakMap();
+
 /**
- * Creates DOM nodes from a template literal.
+ * Marks trusted HTML or SVG for insertion without escaping. This does not sanitize markup.
+ * @param {string} markup - Developer-controlled markup, never untrusted user input
+ * @returns {object} Opaque value to interpolate into html()
+ */
+export function raw(markup) {
+  if (typeof markup !== "string") throw new TypeError("raw() expects a string");
+  const value = Object.freeze({});
+  rawValues.set(value, markup);
+  return value;
+}
+
+/**
+ * Creates DOM nodes, escaping interpolated strings in text and quoted attributes.
+ * Use raw() only for trusted markup; nested templates and DOM nodes retain their identity.
  *
  * @param {TemplateStringsArray} strings
  * @param {...any} values
@@ -25,8 +41,12 @@ export function html(strings, ...values) {
 
   function process(value, key) {
     if (typeof value === "string" || typeof value === "number") {
-      return value;
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[character]);
     }
+
+    if (rawValues.has(value)) return rawValues.get(value);
 
     if (value instanceof Node) {
       const id = `ccm-node-${key}`;
@@ -117,7 +137,7 @@ export function bind(root, instance) {
 
   const elements = [root, ...root.querySelectorAll("*")];
   elements.forEach((el) => {
-    [...el.attributes].forEach((attr) => {
+    [...(el.attributes || [])].forEach((attr) => {
       if (!attr.name.startsWith("data-on-")) return;
 
       const eventType = attr.name.slice(8);

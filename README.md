@@ -81,7 +81,7 @@ Instead of attaching event listeners manually, events are declared directly in H
 Example:
 
 ```js
-/* ./templates.mjs */
+/* ./views.mjs */
 export function view(instance) {
   return html`
     <div>
@@ -101,7 +101,7 @@ export const component = {
   config: {
     ui: [ "ccm.load", "./ccm-ui.js" ],
     name: "Mika",
-    html: [ "ccm.load", "./resources/templates.mjs" ],
+    views: [ "ccm.load", "./resources/views.mjs" ],
     onaction: event => {
       switch (event.action) {
         case "next":
@@ -113,7 +113,7 @@ export const component = {
   Instance: function () {
 
     this.start = async () => {
-      const view = this.html.view(this);
+      const view = this.views.view(this);
       this.ui.render(view, this.element, this);
     };
   
@@ -183,3 +183,31 @@ ccm-ui focuses on:
 ## 📄 License
 
 MIT License
+
+## Safe interpolation
+
+`html` escapes interpolated strings and numbers automatically. Keep source data unchanged;
+remove manual HTML escaping when migrating existing templates to avoid double escaping.
+
+```js
+html`<input value="${username}"><span>${username}</span>`;
+html`<button ${busy && "disabled"}>Save</button>`;
+html`<span>${raw(trustedSvg)}</span>`;
+```
+
+Import `raw` alongside `html`. Use `raw()` only for developer-controlled HTML/SVG, never
+for user input. Nested templates, DOM nodes and arrays remain supported; null, undefined
+and booleans insert nothing. Quote every dynamic attribute value. Interpolations are for
+text and quoted attributes, not tag/attribute names, scripts, styles or event-handler code.
+Escaping does not validate URLs: applications must restrict URL schemes where needed.
+`render(string, ...)` still accepts trusted HTML; use a template passed to `render` for dynamic text.
+
+### raw(markup)
+
+Returns an opaque trusted-markup value for interpolation into `html`. Does not sanitize it.
+
+## Tests
+
+Serve this repository with a static HTTP server and open `test/index.html` in a browser.
+It checks escaping, quoted attributes, nested nodes, arrays, conditional attributes,
+explicit SVG markup and fragment event binding, without additional dependencies.
