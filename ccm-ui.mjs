@@ -44,9 +44,17 @@ export function html(strings, ...values) {
 
   function process(value, key) {
     if (typeof value === "string" || typeof value === "number") {
-      return String(value).replace(/[&<>"']/g, character => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-      })[character]);
+      return String(value).replace(
+        /[&<>"']/g,
+        (character) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[character],
+      );
     }
 
     if (rawValues.has(value)) return rawValues.get(value);
