@@ -82,16 +82,18 @@ Instead of attaching event listeners manually, events are declared directly in H
 
 ### Recommended Structure for a ccmjs Component
 
-For a ccmjs component, place the UI module in `libs/ccm-ui/` and the component's
-templates in `resources/views.mjs`:
+For a ccmjs component, place the UI module in `libs/ccm-ui/`, the ccmjs framework
+in `libs/framework/`, and the component's templates in `resources/views.mjs`:
 
 ```text
 example/
 ├── index.html
 ├── ccm.example.mjs
 ├── libs/
-│   └── ccm-ui/
-│       └── ccm-ui.mjs
+│   ├── ccm-ui/
+│   │   └── ccm-ui.mjs
+│   └── framework/
+│       └── ccm.js
 └── resources/
     └── views.mjs
 ```
@@ -119,6 +121,7 @@ The `render()` function then automatically binds these events to the instance:
 /* ./ccm.example.mjs */
 export const component = {
   name: "example",
+  ccm: "././libs/framework/ccm.js",
   config: {
     ui: [ "ccm.load", "././libs/ccm-ui/ccm-ui.mjs" ],
     name: "Mika",
@@ -287,9 +290,3 @@ Nested `html` calls in ordinary elements remain supported.
 ### raw(markup)
 
 Returns an opaque trusted-markup value for interpolation into `html`. Does not sanitize it.
-
-## Tests
-
-Serve this repository with a static HTTP server and open `test/index.html` in a browser.
-It checks escaping, quoted attributes, nested nodes, arrays, conditional attributes,
-explicit SVG markup and fragment event binding, without additional dependencies.
