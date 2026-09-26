@@ -40,6 +40,9 @@ const view = html`
 render(view, document.body);  // Renders template inside <body>
 ```
 
+The following list and DOM-node examples each reuse the `html` and `render` imports
+from the first example. Run each example separately.
+
 ### Rendering Lists
 
 ```js
@@ -176,11 +179,40 @@ events: {
 
 This keeps UI and behavior loosely coupled and highly reusable.
 
+### Load from the CDN with Subresource Integrity
+
+To use the published version instead of the local UI module, replace `config.ui`
+with this dependency:
+
+```js
+ui: [
+  "ccm.load",
+  {
+    url: "https://cdn.jsdelivr.net/gh/ccmjs/ccm-ui@v1.0.0/ccm-ui-1.0.0.min.mjs",
+    attr: {
+      integrity: "sha384-tKqAZkonLh/vd+YRd55dCgDbChyDv86M1lcKJe4SLKEqUeQuDFPj6CRCF8/b5XYu"
+    }
+  }
+]
+```
+
+ccmjs verifies the module's content against the SHA-384 hash before importing it.
+This URL and hash belong to version `1.0.0`; update both together when upgrading.
+
+For future releases, the **Build & Tag** workflow's run summary shows the CDN URL
+and SRI value. They are also included in the **Build component** step's JSON output
+as `url` and `integrity`. A dry run prepares these values but does not publish the
+file; the CDN URL becomes available after the release tag is published.
+
 ## 📦 API
 
 ### html(strings, ...values)
 
 Creates DOM nodes from a template literal.
+
+### raw(markup)
+
+Returns an opaque trusted-markup value for interpolation into `html`. Does not sanitize it.
 
 ### render(content, element, [instance])
 
@@ -237,22 +269,6 @@ children have been inserted elsewhere only inspects the now-empty fragment.
 HTML strings, but does not bind the destination container itself. Neither function
 automatically calls extension `emit()` methods.
 
-## 🧭 Philosophy
-
-> Start with HTML and JavaScript.  
-> Add patterns only when they are truly needed.
-
-Instead of introducing a rendering engine, virtual DOM, or reactivity system,
-ccm-ui focuses on:
-
-* declarative structure
-* explicit behavior
-* minimal abstraction
-
-## 📄 License
-
-MIT License
-
 ## Safe interpolation
 
 `html` escapes interpolated strings and numbers automatically. Keep source data unchanged;
@@ -287,6 +303,19 @@ const list = html`<ul>${items.map(row)}</ul>`;
 
 Nested `html` calls in ordinary elements remain supported.
 
-### raw(markup)
+## 🧭 Philosophy
 
-Returns an opaque trusted-markup value for interpolation into `html`. Does not sanitize it.
+> Start with HTML and JavaScript.
+>
+> Add patterns only when they are truly needed.
+
+Instead of introducing a rendering engine, virtual DOM, or reactivity system,
+ccm-ui focuses on:
+
+* declarative structure
+* explicit behavior
+* minimal abstraction
+
+## 📄 License
+
+MIT License

@@ -10,8 +10,8 @@ permissions:
   contents: write
 jobs:
   release:
-    uses: ccmjs/component-release/.github/workflows/release.yml@v2.0.0
+    uses: ccmjs/component-release/.github/workflows/release.yml@v2.1.0
     with:
-      tooling-ref: v2.0.0
+      tooling-ref: v2.1.0
       main: ccm-ui.mjs
       dry-run: ${{ inputs.dry-run }}
