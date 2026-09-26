@@ -18,6 +18,15 @@ try {
   render(html`<button data-on-click="go">A</button><button data-on-click="go">B</button>`, target, { events: { go() { clicked++; } } });
   target.querySelectorAll("button").forEach(button => button.click());
   check(clicked === 2, "fragment rendering and event binding");
+  const text = html`${"Hello <world>"}`;
+  render(text, target, { events: {} });
+  check(target.firstChild === text && target.textContent === "Hello <world>", "text-only template renders with an instance");
+  const plainText = document.createTextNode("Plain text");
+  render(plainText, target, {});
+  check(target.firstChild === plainText && target.textContent === "Plain text", "native text node renders with an instance");
+  render(html`<button data-on-click="go">Go</button>`, target, { events: { go() { clicked++; } } });
+  target.firstChild.click();
+  check(clicked === 3, "single element rendering and event binding");
   document.querySelector("#result").textContent = `PASS: ${results.length} checks`;
 } catch (error) {
   document.querySelector("#result").textContent = `FAIL: ${error.stack}`;

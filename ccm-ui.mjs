@@ -143,6 +143,8 @@ export function render(content, element, instance) {
  */
 export function bind(root, instance) {
   if (!root || !instance) return;
+  // Text and comment nodes have no elements to bind.
+  if (typeof root.querySelectorAll !== "function") return;
 
   const handlers = instance.events || {};
 
