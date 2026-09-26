@@ -217,6 +217,22 @@ text and quoted attributes, not tag/attribute names, scripts, styles or event-ha
 Escaping does not validate URLs: applications must restrict URL schemes where needed.
 `render(string, ...)` still accepts trusted HTML; use a template passed to `render` for dynamic text.
 
+### Native `<template>` elements
+
+Static `<template>` markup is supported, but interpolating DOM nodes inside a native
+`<template>` element is not supported. This also applies to nested `html` calls inside
+that element, since they return DOM nodes. Its separate `.content` fragment is not
+traversed when replacing node placeholders.
+
+Use a template function to create reusable content instead:
+
+```js
+const row = (item) => html`<li>${item.name}</li>`;
+const list = html`<ul>${items.map(row)}</ul>`;
+```
+
+Nested `html` calls in ordinary elements remain supported.
+
 ### raw(markup)
 
 Returns an opaque trusted-markup value for interpolation into `html`. Does not sanitize it.

@@ -34,6 +34,7 @@ export function raw(markup) {
 /**
  * Creates DOM nodes, escaping interpolated strings in text and quoted attributes.
  * Use raw() only for trusted markup; nested templates and DOM nodes retain their identity.
+ * DOM node interpolation inside native <template> elements is not supported.
  *
  * @param {TemplateStringsArray} strings
  * @param {...any} values
