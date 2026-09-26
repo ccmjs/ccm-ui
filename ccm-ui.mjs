@@ -16,6 +16,9 @@
 /** Trusted markup explicitly supplied through raw(), never inferred from an object's properties. */
 const rawValues = new WeakMap();
 
+/** Declarative listeners owned by this module, indexed by DOM element. */
+const boundListeners = new WeakMap();
+
 /**
  * Marks trusted HTML or SVG for insertion without escaping. This does not sanitize markup.
  * @param {string} markup - Developer-controlled markup, never untrusted user input
@@ -140,6 +143,8 @@ export function render(content, element, instance) {
  *
  * Behavior:
  * - Calls instance.events[actionName] (if defined)
+ * - Replaces previous declarative bindings with the current attributes and instance
+ * - Preserves listeners registered outside this module
  */
 export function bind(root, instance) {
   if (!root || !instance) return;
@@ -150,13 +155,22 @@ export function bind(root, instance) {
 
   const elements = [root, ...root.querySelectorAll("*")];
   elements.forEach((el) => {
+    for (const { eventType, listener } of boundListeners.get(el) || []) {
+      el.removeEventListener(eventType, listener);
+    }
+    boundListeners.delete(el);
+
+    const listeners = [];
     [...(el.attributes || [])].forEach((attr) => {
       if (!attr.name.startsWith("data-on-")) return;
 
       const eventType = attr.name.slice(8);
       const actionName = attr.value;
 
-      el.addEventListener(eventType, (event) => handlers[actionName]?.(event));
+      const listener = (event) => handlers[actionName]?.(event);
+      el.addEventListener(eventType, listener);
+      listeners.push({ eventType, listener });
     });
+    if (listeners.length) boundListeners.set(el, listeners);
   });
 }

@@ -1,4 +1,4 @@
-import { html, raw, render } from "../ccm-ui.mjs";
+import { html, raw, render, bind } from "../ccm-ui.mjs";
 const results = [];
 function check(condition, name) { if (!condition) throw new Error(name); results.push(name); }
 try {
@@ -27,6 +27,42 @@ try {
   render(html`<button data-on-click="go">Go</button>`, target, { events: { go() { clicked++; } } });
   target.firstChild.click();
   check(clicked === 3, "single element rendering and event binding");
+  const calls = [];
+  const instance = { events: { go() { calls.push("go"); }, next() { calls.push("next"); } } };
+  const button = html`<button data-on-click="go">Go</button>`;
+  let manualCalls = 0;
+  button.addEventListener("click", () => manualCalls++);
+  render(button, target, instance);
+  render(button, target, instance);
+  button.click();
+  check(calls.join() === "go", "repeated rendering does not duplicate listeners");
+  calls.length = 0;
+  bind(button, instance);
+  bind(target, instance);
+  button.click();
+  check(calls.join() === "go", "rebinding a node and its ancestor does not duplicate listeners");
+  calls.length = 0;
+  button.setAttribute("data-on-click", "next");
+  bind(button, instance);
+  button.click();
+  check(calls.join() === "next", "rebinding updates the action name");
+  calls.length = 0;
+  bind(button, { events: { next() { calls.push("replacement"); } } });
+  button.click();
+  check(calls.join() === "replacement", "rebinding replaces the previous instance");
+  calls.length = 0;
+  button.removeAttribute("data-on-click");
+  bind(target, instance);
+  button.click();
+  check(calls.length === 0, "rebinding removes listeners for deleted attributes");
+  check(manualCalls === 5, "rebinding preserves manually registered listeners");
+  button.setAttribute("data-on-click", "go");
+  button.setAttribute("data-on-focus", "next");
+  bind(button, instance);
+  bind(button, instance);
+  button.click();
+  button.dispatchEvent(new Event("focus"));
+  check(calls.join() === "go,next", "rebinding manages multiple event types independently");
   document.querySelector("#result").textContent = `PASS: ${results.length} checks`;
 } catch (error) {
   document.querySelector("#result").textContent = `FAIL: ${error.stack}`;
