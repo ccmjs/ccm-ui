@@ -101,14 +101,7 @@ export const component = {
   config: {
     ui: [ "ccm.load", "./ccm-ui.js" ],
     name: "Mika",
-    views: [ "ccm.load", "./resources/views.mjs" ],
-    onaction: event => {
-      switch (event.action) {
-        case "next":
-          console.log("Next clicked");
-          break;
-      }
-    }
+    views: [ "ccm.load", "./resources/views.mjs" ]
   },
   Instance: function () {
 
@@ -119,24 +112,25 @@ export const component = {
   
     this.events = {
       next: event => {
-        console.log("Next clicked");
+        console.log("Next clicked", event.currentTarget);
       }
     };
   }
 };
 ```
 
-Each event is the original DOM event, extended with additional properties:
-
-* `action` — action name (from `data-on-*`)
-* `instance` — component instance  
-* `element` — source DOM element  
+Each handler receives the original, unchanged DOM event. During the handler,
+`event.currentTarget` refers to the element with the `data-on-*` attribute;
+`event.target` refers to the element where the event originated.
 
 Event flow:
 
 ```
-DOM Event (extended) → instance.events → instance.onaction
+DOM Event → instance.events[action]
 ```
+
+For components using extensions with `emit()`, the handler decides whether and when
+to call `this.emit(...)`. ccm-ui does not emit extension events automatically.
 
 Key idea:
 
