@@ -82,10 +82,10 @@ Example:
 
 ```js
 /* ./views.mjs */
-export function main(instance) {
-  return html`
+export function main(app) {
+  return app.ui.html`
     <div>
-      <h1>Hello ${instance.name}</h1>
+      <h1>Hello ${app.name}</h1>
       <button data-on-click="next">Next</button>
     </div>
   `;
