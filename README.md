@@ -23,8 +23,10 @@ ccm-ui can be used independently of ccmjs for simple HTML templating.
 
 ### Simple Template
 
+Place `ccm-ui.mjs` next to your HTML file and run this example in a `<script type="module">`:
+
 ```js
-import { html, render } from "././libs/ccm-ui/ccm-ui.mjs";
+import { html, render } from "./ccm-ui.mjs";
 
 const name = "Mika";
 
@@ -78,10 +80,29 @@ When used with a ccmjs instance, ccm-ui automatically connects DOM events to ins
 
 Instead of attaching event listeners manually, events are declared directly in HTML.
 
-Example:
+### Recommended Structure for a ccmjs Component
+
+For a ccmjs component, place the UI module in `libs/ccm-ui/` and the component's
+templates in `resources/views.mjs`:
+
+```text
+example/
+├── index.html
+├── ccm.example.mjs
+├── libs/
+│   └── ccm-ui/
+│       └── ccm-ui.mjs
+└── resources/
+    └── views.mjs
+```
+
+The following ccmjs component example uses `././libs/ccm-ui/ccm-ui.mjs` for the UI
+module and `././resources/views.mjs` for its templates.
+
+### Component Templates and Event Handlers
 
 ```js
-/* ./views.mjs */
+/* ./resources/views.mjs */
 export function main(app) {
   return app.ui.html`
     <div>
