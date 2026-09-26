@@ -24,7 +24,7 @@ ccm-ui can be used independently of ccmjs for simple HTML templating.
 ### Simple Template
 
 ```js
-import { html, render } from "https://ccmjs.github.io/ccm-ui/ccm-ui.js";
+import { html, render } from "././libs/ccm-ui/ccm-ui.mjs";
 
 const name = "Mika";
 
@@ -82,7 +82,7 @@ Example:
 
 ```js
 /* ./views.mjs */
-export function view(instance) {
+export function main(instance) {
   return html`
     <div>
       <h1>Hello ${instance.name}</h1>
@@ -99,14 +99,14 @@ The `render()` function then automatically binds these events to the instance:
 export const component = {
   name: "example",
   config: {
-    ui: [ "ccm.load", "./ccm-ui.js" ],
+    ui: [ "ccm.load", "././libs/ccm-ui/ccm-ui.mjs" ],
     name: "Mika",
-    views: [ "ccm.load", "./resources/views.mjs" ]
+    views: [ "ccm.load", "././resources/views.mjs" ]
   },
   Instance: function () {
 
     this.start = async () => {
-      const view = this.views.view(this);
+      const view = this.views.main(this);
       this.ui.render(view, this.element, this);
     };
   
