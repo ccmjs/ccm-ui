@@ -183,6 +183,57 @@ Creates DOM nodes from a template literal.
 
 Renders content and automatically binds events if an instance is provided.
 
+### bind(root, instance)
+
+Binds `data-on-<event>="<action>"` attributes on existing DOM elements to
+`instance.events[action]`. Use it for content inserted outside `render()` or to
+refresh bindings after changes. It does not insert or replace DOM content.
+
+- `root`: An element, document or document fragment. The root itself (if it is an
+  element) and all descendant elements are inspected. Text and comment nodes are ignored.
+- `instance`: A ccmjs instance, or an object with an `events` object whose action
+  names map to handler functions. Missing or null handlers are ignored.
+- Returns `undefined`.
+
+```js
+import { bind } from "./ccm-ui.mjs";
+
+const button = document.createElement("button");
+button.textContent = "Next";
+button.setAttribute("data-on-click", "next");
+const app = {
+  events: {
+    next: event => console.log("Next clicked", event.currentTarget)
+  }
+};
+
+document.body.append(button);
+bind(button, app);
+```
+
+Handlers receive the unchanged DOM event. Listeners are attached directly to each
+element using the default `addEventListener()` options. Browser bubbling and default
+actions remain unchanged unless the handler explicitly changes them. Handler return
+values are ignored, and asynchronous handlers are not awaited. `bind()` does not set
+`this` to the instance; use an arrow function defined in the instance scope when needed.
+
+Each call replaces this module's previous listeners on the inspected elements using
+the current attributes and instance. Repeated `bind()` or `render()` calls therefore
+do not accumulate listeners. Changed action names and removed attributes take effect
+on rebinding; listeners registered manually are preserved. This also applies when
+rebinding an ancestor of an already bound element.
+
+Bindings are not observed automatically: call `bind()` again after adding elements,
+changing attributes or replacing the `instance.events` object. Without a root or
+instance, the call does nothing and does not remove existing bindings. Traversal does
+not enter shadow roots or the separate `.content` of native `<template>` elements;
+pass such a root explicitly when needed. Calling `bind()` on a fragment after its
+children have been inserted elsewhere only inspects the now-empty fragment.
+
+`render(content, element, instance)` calls `bind()` for the rendered content, including
+HTML strings, but does not bind the destination container itself. Neither function
+automatically calls extension `emit()` methods.
+
 ## 🧭 Philosophy
 
 > Start with HTML and JavaScript.  

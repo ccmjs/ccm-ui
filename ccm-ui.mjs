@@ -10,7 +10,7 @@
  * - DOM rendering helper
  * - Declarative event binding via `data-on-*`
  * - Automatic integration with `instance.events`
- * - No public bind() API (handled internally by render)
+ * - Public bind() helper, also called automatically by render()
  */
 
 /** Trusted markup explicitly supplied through raw(), never inferred from an object's properties. */
@@ -131,7 +131,7 @@ export function render(content, element, instance) {
   }
 
   if (content instanceof Node) {
-    // automatic event binding (internal)
+    // Bind the rendered content before insertion.
     bind(content, instance);
 
     element.appendChild(content);
@@ -139,16 +139,25 @@ export function render(content, element, instance) {
 }
 
 /**
- * Binds declarative DOM events to instance actions.
+ * Binds declarative DOM events on root and its descendants to instance actions.
  *
  * Convention:
  *   data-on-click="next"
  *   data-on-input="typing"
  *
  * Behavior:
- * - Calls instance.events[actionName] (if defined)
- * - Replaces previous declarative bindings with the current attributes and instance
- * - Preserves listeners registered outside this module
+ * - Calls instance.events[actionName] with the unchanged DOM event (if non-null)
+ * - Attaches direct listeners with default options; ignores handler return values
+ * - Does not await handlers, bind their `this` to instance or call extension emit()
+ * - Replaces this module's previous bindings with the current attributes and instance
+ * - Removes obsolete bindings on inspected elements; preserves manually added listeners
+ * - Requires rebinding after DOM/attribute changes or replacing instance.events
+ * - Does nothing without root/instance or for text/comment nodes (no cleanup)
+ * - Does not traverse shadow roots or template.content; pass those roots explicitly
+ *
+ * @param {Element|Document|DocumentFragment} root - Existing DOM subtree to inspect
+ * @param {Object} instance - ccmjs instance or object with an events handler map
+ * @returns {void}
  */
 export function bind(root, instance) {
   if (!root || !instance) return;
