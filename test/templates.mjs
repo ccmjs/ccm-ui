@@ -63,6 +63,25 @@ try {
   button.click();
   button.dispatchEvent(new Event("focus"));
   check(calls.join() === "go,next", "rebinding manages multiple event types independently");
+  calls.length = 0;
+  const stringTarget = document.createElement("div");
+  let containerCalls = 0;
+  stringTarget.setAttribute("data-on-click", "container");
+  const stringInstance = { events: { ...instance.events, container() { containerCalls++; } } };
+  const markup = 'Text<!-- comment --><button data-on-click="go">Go</button><section><button data-on-click="next">Next</button></section>';
+  render(markup, stringTarget, stringInstance);
+  stringTarget.querySelectorAll("button").forEach(el => el.click());
+  check(calls.join() === "go,next", "HTML strings bind top-level elements and descendants");
+  stringTarget.click();
+  check(containerCalls === 0, "HTML string rendering does not bind the container");
+  calls.length = 0;
+  render(markup, stringTarget, stringInstance);
+  stringTarget.querySelectorAll("button").forEach(el => el.click());
+  check(calls.join() === "go,next", "repeated HTML string rendering binds each action once");
+  calls.length = 0;
+  render(markup, stringTarget);
+  stringTarget.querySelectorAll("button").forEach(el => el.click());
+  check(calls.length === 0 && stringTarget.querySelectorAll("button").length === 2, "HTML strings render without an instance");
   document.querySelector("#result").textContent = `PASS: ${results.length} checks`;
 } catch (error) {
   document.querySelector("#result").textContent = `FAIL: ${error.stack}`;

@@ -123,6 +123,9 @@ export function render(content, element, instance) {
 
   if (typeof content === "string") {
     element.innerHTML = content;
+    for (const child of element.children) {
+      bind(child, instance);
+    }
     return;
   }
 
