@@ -85,8 +85,10 @@ Instead of attaching event listeners manually, events are declared directly in H
 
 ### Recommended Structure for a ccmjs Component
 
-For a ccmjs component, place the UI module in `libs/ccm-ui/`, the ccmjs framework
-in `libs/framework/`, and the component's templates in `resources/views.mjs`:
+For a ccmjs component, copy the files shipped in each library's release tag into
+its directory under `libs/`. Keep the versioned minified file, its source map and
+the license together, preserving their filenames. For example, using ccm-ui `1.0.0`
+and ccmjs `28.0.0`:
 
 ```text
 example/
@@ -94,15 +96,26 @@ example/
 ├── ccm.example.mjs
 ├── libs/
 │   ├── ccm-ui/
-│   │   └── ccm-ui.mjs
+│   │   ├── ccm-ui-1.0.0.min.mjs
+│   │   ├── ccm-ui-1.0.0.min.mjs.map
+│   │   └── LICENSE
 │   └── framework/
-│       └── ccm.js
+│       ├── ccm-28.0.0.min.js
+│       ├── ccm-28.0.0.min.js.map
+│       └── LICENSE
 └── resources/
     └── views.mjs
 ```
 
-The following ccmjs component example uses `././libs/ccm-ui/ccm-ui.mjs` for the UI
-module and `././resources/views.mjs` for its templates.
+Use the release tag's contents, rather than the development files from the `main`
+branch. The `.map` file is the source map and includes the module's source code;
+the release does not ship a separate unminified main file. Retain any additional
+files included in a library's release as well.
+
+The following component loads `././libs/ccm-ui/ccm-ui-1.0.0.min.mjs` and
+`././libs/framework/ccm-28.0.0.min.js`. The component's own templates remain in
+`././resources/views.mjs`. When upgrading a library, copy the new release files
+and update the corresponding dependency path.
 
 ### Component Templates and Event Handlers
 
@@ -124,9 +137,9 @@ The `render()` function then automatically binds these events to the instance:
 /* ./ccm.example.mjs */
 export const component = {
   name: "example",
-  ccm: "././libs/framework/ccm.js",
+  ccm: "././libs/framework/ccm-28.0.0.min.js",
   config: {
-    ui: [ "ccm.load", "././libs/ccm-ui/ccm-ui.mjs" ],
+    ui: [ "ccm.load", "././libs/ccm-ui/ccm-ui-1.0.0.min.mjs" ],
     name: "Mika",
     views: [ "ccm.load", "././resources/views.mjs" ]
   },
